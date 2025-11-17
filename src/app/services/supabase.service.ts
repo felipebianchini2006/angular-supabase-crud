@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { Product } from '../models/product';
+import { Order, OrderItem, CreateOrderData } from '../models/order';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -9,6 +10,9 @@ export class SupabaseService {
 
   // Produtos
   products = signal<Product[]>([]);
+
+  // Pedidos
+  orders = signal<Order[]>([]);
 
   // Usuário logado
   user = signal<User | null>(null);
@@ -104,5 +108,95 @@ export class SupabaseService {
     const { error } = await this.supabase.from('products').delete().eq('id', id);
     if (error) throw error;
     await this.loadProducts();
+  }
+
+  // -------------------------
+  // Pedidos (Orders)
+  // -------------------------
+
+  async loadOrders() {
+    const { data, error } = await this.supabase
+      .from('orders')
+      .select(`
+        *,
+        items:order_items(*)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    this.orders.set(data as Order[]);
+  }
+
+  async getOrderById(orderId: number): Promise<Order | null> {
+    const { data, error } = await this.supabase
+      .from('orders')
+      .select(`
+        *,
+        items:order_items(*)
+      `)
+      .eq('id', orderId)
+      .single();
+
+    if (error) throw error;
+    return data as Order;
+  }
+
+  async createOrder(orderData: CreateOrderData): Promise<Order> {
+    // 1. Criar o pedido
+    const { data: order, error: orderError } = await this.supabase
+      .from('orders')
+      .insert([{
+        user_id: this.user()?.id,
+        cep: orderData.cep,
+        subtotal: orderData.subtotal,
+        shipping_cost: orderData.shipping_cost,
+        total: orderData.total,
+        status: 'confirmed'
+      }])
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // 2. Criar os itens do pedido
+    const orderItems = orderData.items.map(item => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_price: item.product_price,
+      quantity: item.quantity,
+      subtotal: item.subtotal
+    }));
+
+    const { error: itemsError } = await this.supabase
+      .from('order_items')
+      .insert(orderItems);
+
+    if (itemsError) throw itemsError;
+
+    // 3. Recarregar pedidos
+    await this.loadOrders();
+
+    return order as Order;
+  }
+
+  async updateOrderStatus(orderId: number, status: string) {
+    const { error } = await this.supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', orderId);
+
+    if (error) throw error;
+    await this.loadOrders();
+  }
+
+  async deleteOrder(orderId: number) {
+    const { error } = await this.supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId);
+
+    if (error) throw error;
+    await this.loadOrders();
   }
 }

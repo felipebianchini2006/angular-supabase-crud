@@ -5,6 +5,10 @@
       <mat-icon>arrow_back</mat-icon>
       Voltar
     </button>
+    <button mat-stroked-button routerLink="/cart" class="cart-button">
+      <mat-icon [matBadge]="cartService.itemCount()" [matBadgeHidden]="cartService.itemCount() === 0" matBadgeColor="warn">shopping_cart</mat-icon>
+      Carrinho
+    </button>
     <button mat-raised-button color="primary" (click)="openDialog()" class="add-button">
       <mat-icon>add</mat-icon>
       Adicionar Produto
@@ -55,6 +59,9 @@
       </button>
       <button mat-icon-button color="warn" (click)="deleteProduct(product.id!)" matTooltip="Excluir">
         <mat-icon>delete</mat-icon>
+      </button>
+      <button mat-icon-button color="accent" (click)="addToCart(product)" matTooltip="Adicionar ao Carrinho">
+        <mat-icon>shopping_cart</mat-icon>
       </button>
     </td>
   </ng-container>

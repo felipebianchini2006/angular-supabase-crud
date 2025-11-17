@@ -1,0 +1,111 @@
+<div class="cart-container">
+  <div class="header-section">
+    <h2>Carrinho de Compras</h2>
+    <div class="header-actions">
+      <button mat-stroked-button routerLink="/products" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+        Continuar Comprando
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="items.length === 0" class="empty-cart">
+    <mat-icon>shopping_cart</mat-icon>
+    <h3>Seu carrinho está vazio</h3>
+    <p>Adicione produtos para começar suas compras!</p>
+    <button mat-raised-button color="primary" routerLink="/products">
+      Ver Produtos
+    </button>
+  </div>
+
+  <div *ngIf="items.length > 0" class="cart-content">
+    <!-- Lista de itens -->
+    <mat-card *ngFor="let item of items" class="cart-item">
+      <div class="item-content">
+        <img
+          [src]="item.product.imageUrl || 'https://via.placeholder.com/100?text=Sem+Imagem'"
+          [alt]="item.product.name"
+          class="item-image">
+
+        <div class="item-details">
+          <h3>{{ item.product.name }}</h3>
+          <p class="item-description">{{ item.product.description || 'Sem descrição' }}</p>
+          <p class="item-price">{{ item.product.price | currency:'BRL' }}</p>
+        </div>
+
+        <div class="item-actions">
+          <div class="quantity-controls">
+            <button mat-icon-button (click)="decrementQuantity(item.product.id!)" [disabled]="item.quantity <= 1">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <span class="quantity">{{ item.quantity }}</span>
+            <button mat-icon-button (click)="incrementQuantity(item.product.id!)">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div class="item-total">
+            <span class="total-label">Total:</span>
+            <span class="total-value">{{ getItemTotal(item) | currency:'BRL' }}</span>
+          </div>
+
+          <button mat-icon-button color="warn" (click)="removeItem(item.product.id!)" class="remove-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-divider></mat-divider>
+
+    <!-- Cálculo de Frete -->
+    <mat-card class="shipping-card">
+      <h3>Calcular Frete</h3>
+      <div class="shipping-input">
+        <mat-form-field appearance="outline" class="cep-field">
+          <mat-label>CEP</mat-label>
+          <input matInput [(ngModel)]="cepInput" placeholder="00000-000" maxlength="9">
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="calculateShipping()">
+          Calcular
+        </button>
+      </div>
+      <p *ngIf="cep" class="shipping-info">
+        <mat-icon>local_shipping</mat-icon>
+        <span *ngIf="shippingCost === 0">Frete GRÁTIS! 🎉</span>
+        <span *ngIf="shippingCost > 0">Frete: {{ shippingCost | currency:'BRL' }}</span>
+      </p>
+      <p *ngIf="subtotal < 100 && subtotal > 0" class="free-shipping-info">
+        Falta {{ 100 - subtotal | currency:'BRL' }} para frete grátis!
+      </p>
+    </mat-card>
+
+    <!-- Resumo do Pedido -->
+    <mat-card class="summary-card">
+      <h3>Resumo do Pedido</h3>
+      <div class="summary-line">
+        <span>Subtotal:</span>
+        <span>{{ subtotal | currency:'BRL' }}</span>
+      </div>
+      <div class="summary-line">
+        <span>Frete:</span>
+        <span *ngIf="!cep">-</span>
+        <span *ngIf="cep && shippingCost === 0" class="free-shipping">GRÁTIS</span>
+        <span *ngIf="cep && shippingCost > 0">{{ shippingCost | currency:'BRL' }}</span>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="summary-line total-line">
+        <span><strong>Total Geral:</strong></span>
+        <span><strong>{{ total | currency:'BRL' }}</strong></span>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="finalize-button"
+        (click)="openConfirmationDialog()">
+        Finalizar Pedido
+      </button>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<div class="order-history-container">
+  <div class="header-section">
+    <h2>Histórico de Pedidos</h2>
+    <div class="header-actions">
+      <button mat-stroked-button routerLink="/" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+        Voltar
+      </button>
+      <button mat-raised-button color="primary" routerLink="/products" class="shop-button">
+        <mat-icon>shopping_bag</mat-icon>
+        Continuar Comprando
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="orders.length === 0" class="empty-state">
+    <mat-icon>receipt_long</mat-icon>
+    <h3>Nenhum pedido encontrado</h3>
+    <p>Você ainda não realizou nenhum pedido.</p>
+    <button mat-raised-button color="primary" routerLink="/products">
+      Ver Produtos
+    </button>
+  </div>
+
+  <mat-accordion *ngIf="orders.length > 0">
+    <mat-expansion-panel *ngFor="let order of orders" class="order-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title class="order-title">
+          <div class="order-header-info">
+            <span class="order-id"><strong>Pedido #{{ order.id }}</strong></span>
+            <mat-chip [color]="getStatusColor(order.status || 'confirmed')">
+              {{ getStatusLabel(order.status || 'confirmed') }}
+            </mat-chip>
+          </div>
+        </mat-panel-title>
+        <mat-panel-description class="order-description">
+          <span class="order-date">{{ formatDate(order.created_at) }}</span>
+          <span class="order-total"><strong>{{ order.total | currency:'BRL' }}</strong></span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="order-details">
+        <!-- Informações do Pedido -->
+        <div class="order-info-section">
+          <h3>Informações do Pedido</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">CEP de Entrega:</span>
+              <span class="info-value">{{ order.cep }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Data do Pedido:</span>
+              <span class="info-value">{{ formatDate(order.created_at) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Status:</span>
+              <span class="info-value">
+                <mat-chip [color]="getStatusColor(order.status || 'confirmed')" class="small-chip">
+                  {{ getStatusLabel(order.status || 'confirmed') }}
+                </mat-chip>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Itens do Pedido -->
+        <div class="order-items-section">
+          <h3>Itens do Pedido</h3>
+          <div class="items-list">
+            <div *ngFor="let item of order.items" class="order-item">
+              <div class="item-details">
+                <strong>{{ item.product_name }}</strong>
+                <div class="item-meta">
+                  {{ item.product_price | currency:'BRL' }} x {{ item.quantity }}
+                </div>
+              </div>
+              <div class="item-subtotal">
+                {{ item.subtotal | currency:'BRL' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumo Financeiro -->
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>{{ order.subtotal | currency:'BRL' }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Frete:</span>
+            <span *ngIf="order.shipping_cost === 0" class="free-shipping">GRÁTIS</span>
+            <span *ngIf="order.shipping_cost > 0">{{ order.shipping_cost | currency:'BRL' }}</span>
+          </div>
+          <div class="summary-row total-row">
+            <span><strong>Total:</strong></span>
+            <span><strong>{{ order.total | currency:'BRL' }}</strong></span>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

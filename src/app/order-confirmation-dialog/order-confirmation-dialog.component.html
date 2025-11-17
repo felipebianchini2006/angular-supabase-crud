@@ -1,0 +1,74 @@
+<h2 mat-dialog-title>Confirmar Pedido</h2>
+
+<mat-dialog-content>
+  <div class="confirmation-content">
+    <p class="intro-text">Revise seu pedido antes de finalizar:</p>
+
+    <!-- Lista de Itens -->
+    <div class="items-section">
+      <h3>Itens do Pedido</h3>
+      <div *ngFor="let item of data.items" class="item-row">
+        <div class="item-info">
+          <img
+            [src]="item.product.imageUrl || 'https://via.placeholder.com/50?text=Sem+Imagem'"
+            [alt]="item.product.name"
+            class="item-thumbnail">
+          <div>
+            <strong>{{ item.product.name }}</strong>
+            <div class="item-meta">
+              {{ item.product.price | currency:'BRL' }} x {{ item.quantity }}
+            </div>
+          </div>
+        </div>
+        <div class="item-total">
+          {{ getItemTotal(item) | currency:'BRL' }}
+        </div>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Resumo -->
+    <div class="summary-section">
+      <h3>Resumo</h3>
+      <div class="summary-row">
+        <span>CEP de Entrega:</span>
+        <span><strong>{{ data.cep }}</strong></span>
+      </div>
+      <div class="summary-row">
+        <span>Subtotal:</span>
+        <span>{{ data.subtotal | currency:'BRL' }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Frete:</span>
+        <span *ngIf="data.shippingCost === 0" class="free-shipping">GRÁTIS</span>
+        <span *ngIf="data.shippingCost > 0">{{ data.shippingCost | currency:'BRL' }}</span>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="summary-row total-row">
+        <span><strong>Total Geral:</strong></span>
+        <span><strong>{{ data.total | currency:'BRL' }}</strong></span>
+      </div>
+    </div>
+
+    <div class="alert-info">
+      <mat-icon>info</mat-icon>
+      <p>Ao confirmar, seu pedido será processado e você receberá um email de confirmação.</p>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    <mat-icon>close</mat-icon>
+    Cancelar
+  </button>
+  <button mat-stroked-button color="primary" (click)="onContinue()">
+    <mat-icon>shopping_cart</mat-icon>
+    Continuar Comprando
+  </button>
+  <button mat-raised-button color="primary" (click)="onConfirm()">
+    <mat-icon>check_circle</mat-icon>
+    Confirmar Pedido
+  </button>
+</mat-dialog-actions>
